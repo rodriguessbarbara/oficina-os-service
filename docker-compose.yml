@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  # Banco Relacional exclusivo para o Microsserviço de OS
+  db-os:
+    image: postgres:16-alpine
+    container_name: oficina-os-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: oficina_os_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345os
+    volumes:
+      - os_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d oficina_os_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mongodb-os:
+    # Banco Não-Relacional para o Histórico/Timeline da OS
+    image: mongo:6.0
+    container_name: oficina-os-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: os_history
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 12345mongo
+    volumes:
+      - os_mongo_data:/data/db
+
+volumes:
+  os_postgres_data:
+  os_mongo_data:

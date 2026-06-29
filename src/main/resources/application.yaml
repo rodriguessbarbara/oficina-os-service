@@ -1,3 +1,33 @@
 spring:
   application:
     name: oficina-os-service
+
+  # Configuração PostgreSQL
+  datasource:
+    url: jdbc:postgresql://localhost:5433/oficina_os_db
+    username: postgres
+    password: 12345os
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+  # Conexão com o MongoDB
+  data:
+    mongodb:
+      uri: mongodb://admin:12345mongo@localhost:27017/os_history?authSource=admin
+
+# Ativa os Probes de saúde e métricas para o Kubernetes e Prometheus
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  health:
+    probes:
+      enabled: true
