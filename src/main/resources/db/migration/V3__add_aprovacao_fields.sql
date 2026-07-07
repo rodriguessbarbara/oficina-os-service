@@ -1,0 +1,3 @@
+ALTER TABLE tb_ordem_servico
+    ADD COLUMN IF NOT EXISTS is_aprovado   BOOLEAN   NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS data_aprovacao TIMESTAMP;

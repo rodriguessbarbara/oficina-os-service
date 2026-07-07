@@ -4,6 +4,7 @@ plugins {
 	id("org.springframework.boot") version "4.1.0"
 	id("io.spring.dependency-management") version "1.1.7"
 	kotlin("plugin.jpa") version "2.3.21"
+	jacoco
 }
 
 group = "com"
@@ -58,4 +59,33 @@ allOpen {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+// ---------- JaCoCo – cobertura mínima 80% ----------
+tasks.jacocoTestReport {
+	dependsOn(tasks.test)
+	reports {
+		xml.required.set(true)
+		html.required.set(true)
+	}
+}
+
+tasks.jacocoTestCoverageVerification {
+	dependsOn(tasks.jacocoTestReport)
+	violationRules {
+		rule {
+			excludes = listOf(
+				"com.oficina_os_service.infra.repository.*",
+				"com.oficina_os_service.infra.nosql.*",
+				"com.oficina_os_service.OficinaOsServiceApplication*"
+			)
+			limit {
+				minimum = "0.80".toBigDecimal()
+			}
+		}
+	}
+}
+
+tasks.check {
+	dependsOn(tasks.jacocoTestCoverageVerification)
 }
