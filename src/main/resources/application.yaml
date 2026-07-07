@@ -19,7 +19,21 @@ spring:
     mongodb:
       uri: mongodb://admin:12345mongo@localhost:27017/os_history?authSource=admin
 
-# Ativa os Probes de saúde e métricas para o Kubernetes e Prometheus
+  # RabbitMQ (local)
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: 5672
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASS:guest}
+
+# URLs dos outros microsserviços (substituídas em cada profile)
+services:
+  billing:
+    url: ${BILLING_SERVICE_URL:http://localhost:8081}
+  execution:
+    url: ${EXECUTION_SERVICE_URL:http://localhost:8082}
+
+# Probes de saúde e métricas para Kubernetes e Prometheus
 management:
   endpoint:
     health:

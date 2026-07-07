@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:db-os}:5432/${DB_NAME:oficina_os_db}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:12345os}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_USER:admin}:${MONGO_PASS:12345mongo}@${MONGO_HOST:mongodb-os}:27017/${MONGO_DB:os_history}?authSource=admin
+
+  rabbitmq:
+    host: ${RABBIT_HOST:rabbitmq}
+    port: 5672
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASS:guest}
+
+services:
+  billing:
+    url: ${BILLING_SERVICE_URL:http://billing-service}
+  execution:
+    url: ${EXECUTION_SERVICE_URL:http://execution-service}
