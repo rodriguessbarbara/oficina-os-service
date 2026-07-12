@@ -24,9 +24,9 @@ dependencies {
 	// Configurações de Inicialização e Infra
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.flywaydb:flyway-core") // CORRIGIDO: Flyway não é um starter do Spring Boot
+	implementation("org.flywaydb:flyway-core")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
-	implementation("org.springframework.boot:spring-boot-starter-web") // CORRIGIDO: webmvc se chama apenas web
+	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 	implementation("org.springframework.boot:spring-boot-starter-amqp")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
@@ -34,7 +34,7 @@ dependencies {
 	// Banco de Dados e Kotlin
 	implementation("org.flywaydb:flyway-database-postgresql")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin") // CORRIGIDO: pacote atualizado do Jackson Kotlin
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	
 	compileOnly("org.projectlombok:lombok")
 	runtimeOnly("org.postgresql:postgresql")
