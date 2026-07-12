@@ -44,8 +44,11 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBIT_HOST: ${RABBIT_HOST:-rabbitmq}
+      RABBIT_PORT: ${RABBIT_PORT:-5672}
+      RABBIT_USER: ${RABBIT_USER:-guest}
+      RABBIT_PASS: ${RABBIT_PASS:-guest}
+      RABBIT_VHOST: ${RABBIT_VHOST:-/}
     volumes:
       - os_rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
@@ -85,3 +88,4 @@ services:
 volumes:
   os_postgres_data:
   os_mongo_data:
+  os_rabbitmq_data:

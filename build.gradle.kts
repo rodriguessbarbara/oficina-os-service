@@ -24,36 +24,31 @@ dependencies {
 	// Configurações de Inicialização e Infra
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-flyway")
-	implementation("org.springframework.boot:spring-boot-starter-mongodb")
+	implementation("org.flywaydb:flyway-core") // CORRIGIDO: Flyway não é um starter do Spring Boot
 	implementation("org.springframework.boot:spring-boot-starter-validation")
-	implementation("org.springframework.boot:spring-boot-starter-webmvc")
+	implementation("org.springframework.boot:spring-boot-starter-web") // CORRIGIDO: webmvc se chama apenas web
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 	implementation("org.springframework.boot:spring-boot-starter-amqp")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
+	
 	// Banco de Dados e Kotlin
 	implementation("org.flywaydb:flyway-database-postgresql")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("tools.jackson.module:jackson-module-kotlin")
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin") // CORRIGIDO: pacote atualizado do Jackson Kotlin
+	
 	compileOnly("org.projectlombok:lombok")
 	runtimeOnly("org.postgresql:postgresql")
 	annotationProcessor("org.projectlombok:lombok")
+	
+	// Testes
 	testCompileOnly("org.projectlombok:lombok")
 	testAnnotationProcessor("org.projectlombok:lombok")
-	testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-flyway-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-mongodb-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-test") // Único starter de teste necessário
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("io.cucumber:cucumber-spring:7.18.0")
 	testImplementation("io.cucumber:cucumber-java:7.18.0")
 	testImplementation("io.cucumber:cucumber-junit-platform-engine:7.18.0")
-	testCompileOnly("org.projectlombok:lombok")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-	testAnnotationProcessor("org.projectlombok:lombok")
 }
 
 kotlin {
