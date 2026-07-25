@@ -111,7 +111,7 @@ class OrdemServicoServiceImpl(
   override fun listarPorCliente(clienteId: Long): List<OrdemServicoResponse> =
     osRepository.findAllByClienteId(clienteId).map { entity ->
       val historico = historicoRepository.findAllByOsIdOrderByDataAlteracaoDesc(entity.id!!)
-      val resumo = resumoRepository.findById(entity.id).orElse(null)
+      val resumo = resumoRepository.findById(entity.id!!).orElse(null)
       entity.toResponse(historico, resumo)
     }
   
