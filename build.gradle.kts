@@ -5,6 +5,7 @@ plugins {
 	id("io.spring.dependency-management") version "1.1.5"
 	kotlin("plugin.jpa") version "1.9.24"
 	jacoco
+	id("org.sonarqube") version "5.1.0.4882"
 }
 
 group = "com"
@@ -36,19 +37,16 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	
-	compileOnly("org.projectlombok:lombok")
 	runtimeOnly("org.postgresql:postgresql")
-	annotationProcessor("org.projectlombok:lombok")
 	
 	// Testes
-	testCompileOnly("org.projectlombok:lombok")
-	testAnnotationProcessor("org.projectlombok:lombok")
-	testImplementation("org.springframework.boot:spring-boot-starter-test") // Único starter de teste necessário
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("io.cucumber:cucumber-spring:7.18.0")
 	testImplementation("io.cucumber:cucumber-java:7.18.0")
 	testImplementation("io.cucumber:cucumber-junit-platform-engine:7.18.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testRuntimeOnly("com.h2database:h2")
 }
 
 kotlin {
@@ -94,4 +92,24 @@ tasks.jacocoTestCoverageVerification {
 
 tasks.check {
 	dependsOn(tasks.jacocoTestCoverageVerification)
+}
+
+// ---------- SonarQube ----------
+sonarqube {
+	properties {
+		property("sonar.projectKey", "oficina-os-service")
+		property("sonar.projectName", "oficina-os-service")
+		property("sonar.sources", "src/main/kotlin")
+		property("sonar.tests", "src/test/kotlin")
+		property("sonar.kotlin.coverage.reportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+		property(
+			"sonar.exclusions",
+			"**/OficinaOsServiceApplication.kt," +
+					"**/infra/repository/**," +
+					"**/infra/nosql/**," +
+					"**/domain/enum/**," +
+					"**/domain/model/**," +
+					"**/infra/dto/**"
+		)
+	}
 }
