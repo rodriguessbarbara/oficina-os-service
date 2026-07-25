@@ -16,9 +16,7 @@ import org.springframework.test.context.TestPropertySource
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestPropertySource(properties = [
-  // Desabilita auto-configuração do RabbitMQ para não precisar de broker real
-  "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration",
-  // Desabilita auto-configuração do MongoDB para não precisar de servidor real
+  "spring.autoconfigure.exclude[0]=org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration",
   "spring.autoconfigure.exclude[1]=org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration",
   "spring.autoconfigure.exclude[2]=org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration"
 ])
