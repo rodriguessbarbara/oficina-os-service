@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: os-service
+  namespace: NAMESPACE_PLACEHOLDER
+  labels:
+    app: os-service
+
+spec:
+  type: ClusterIP
+  selector:
+    app: os-service
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8080
