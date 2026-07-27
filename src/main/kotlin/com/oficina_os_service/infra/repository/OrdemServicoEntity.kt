@@ -3,7 +3,6 @@ package com.oficina_os_service.infra.repository
 import com.oficina_os_service.domain.enum.StatusOS
 import jakarta.persistence.*
 import java.time.Instant
-import java.util.Collections.emptyList
 
 @Entity
 @Table(name = "tb_ordem_servico")
@@ -42,8 +41,8 @@ class OrdemServicoEntity(
   var dataAprovacao: Instant? = null,
   
   @OneToMany(mappedBy = "ordemServico", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-  var itensServico: List<ItemServicoEntity> = emptyList(),
+  var itensServico: MutableList<ItemServicoEntity> = mutableListOf(),
   
   @OneToMany(mappedBy = "ordemServico", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-  var itensEstoque: List<ItemEstoqueEntity> = emptyList()
+  var itensEstoque: MutableList<ItemEstoqueEntity> = mutableListOf()
 )

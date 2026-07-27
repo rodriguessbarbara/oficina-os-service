@@ -6,6 +6,5 @@ Feature: Cancelamento de OS – Rollback da Saga
     Then a OS deve ter status CANCELADA
 
   Scenario: Cancelamento de OS inexistente retorna 404
-    Given uma OS existente com id 9999
     When o cancelamento da OS 9999 e solicitado com motivo "Teste"
-    Then a resposta deve ter status HTTP 404
+    Then o cancelamento deve retornar status HTTP 404

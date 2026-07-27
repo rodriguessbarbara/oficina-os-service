@@ -41,7 +41,7 @@ class OrdemServicoServiceImpl(
         status = StatusItemServico.PENDENTE,
         ordemServico = savedOs
       )
-    }
+    }.toMutableList()
     
     val itensEstoque = request.itensEstoque.map { item ->
       ItemEstoqueEntity(
@@ -50,7 +50,7 @@ class OrdemServicoServiceImpl(
         precoUnitario = item.precoUnitario,
         ordemServico = savedOs
       )
-    }
+    }.toMutableList()
     
     savedOs.itensServico = itensServico
     savedOs.itensEstoque = itensEstoque

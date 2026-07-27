@@ -4,6 +4,7 @@ import com.oficina_os_service.infra.messaging.OsEventPublisher
 import com.oficina_os_service.infra.nosql.HistoricoStatusRepository
 import com.oficina_os_service.infra.nosql.OsResumoRepository
 import io.cucumber.spring.CucumberContextConfiguration
+import org.springframework.amqp.rabbit.connection.ConnectionFactory
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -22,7 +23,7 @@ import org.springframework.test.context.TestPropertySource
 ])
 class CucumberConfig {
   
-  // Mocks para infraestrutura não disponível no contexto de testes
+  @MockBean lateinit var connectionFactory: ConnectionFactory
   @MockBean lateinit var osEventPublisher: OsEventPublisher
   @MockBean lateinit var historicoStatusRepository: HistoricoStatusRepository
   @MockBean lateinit var osResumoRepository: OsResumoRepository
