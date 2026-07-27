@@ -3,6 +3,7 @@ package com.oficina_os_service.infra
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -37,6 +38,14 @@ class GlobalExceptionHandler {
         field to (error.defaultMessage ?: "inválido")
       }
       it.setProperty("erros", erros)
+      it.setProperty("timestamp", Instant.now())
+    }
+
+  @ExceptionHandler(HttpMessageNotReadableException::class)
+  fun handleUnreadableMessage(ex: HttpMessageNotReadableException): ProblemDetail =
+    ProblemDetail.forStatus(HttpStatus.BAD_REQUEST).also {
+      it.title = "JSON inválido"
+      it.detail = ex.mostSpecificCause.message
       it.setProperty("timestamp", Instant.now())
     }
   
