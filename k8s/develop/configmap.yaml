@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: os-service-config
+  namespace: oficina-mvp-develop
+
+data:
+  SPRING_PROFILES_ACTIVE: "docker"
+  DD_ENV: "develop"
+
+  # PostgreSQL
+  DB_HOST: "app-postgres-db-app-cluster-develop.rds.amazonaws.com"
+  DB_NAME: "oficina_os_db"
+  DB_USER: "postgres"
+
+  # MongoDB (Atlas ou DocumentDB)
+  MONGO_HOST: "mongo-cluster.mongodb.net"
+  MONGO_USER: "admin"
+  MONGO_DB: "os_history"
+
+  # RabbitMQ (CloudAMQP ou Amazon MQ)
+  RABBIT_HOST: "rabbitmq.oficina-mvp-develop.svc.cluster.local"
+  RABBIT_PORT: "5672"
+  RABBIT_USER: "guest"
+  RABBIT_VHOST: "/"
+
+  # URLs dos outros microsserviços
+  BILLING_SERVICE_URL: "http://billing-service.oficina-mvp-develop.svc.cluster.local"
+  EXECUTION_SERVICE_URL: "http://execution-service.oficina-mvp-develop.svc.cluster.local"
