@@ -37,7 +37,11 @@ class ExecutionEventConsumerTest {
     verify(resumoRepository).save(captor.capture())
     assertThat(captor.value.execucaoId).isEqualTo(100L)
     assertThat(captor.value.statusExecucao).isEqualTo("EM_REPARO")
-    verify(osService).atualizarStatus(1L, StatusOS.EM_EXECUCAO, any())
+    verify(osService).atualizarStatus(
+      1L,
+      StatusOS.EM_EXECUCAO,
+      "Execução iniciada pelo Execution Service"
+    )
   }
   
   @Test
@@ -52,7 +56,7 @@ class ExecutionEventConsumerTest {
     val captor = ArgumentCaptor.forClass(OsResumoDocument::class.java)
     verify(resumoRepository).save(captor.capture())
     assertThat(captor.value.statusExecucao).isEqualTo("FINALIZADO")
-    verify(osService).atualizarStatus(1L, StatusOS.FINALIZADA, any())
+    verify(osService).atualizarStatus(1L, StatusOS.FINALIZADA, "Execução finalizada")
   }
   
   @Test
@@ -63,6 +67,10 @@ class ExecutionEventConsumerTest {
     consumer.onExecucaoIniciada(event)
     
     verify(resumoRepository, never()).save(any())
-    verify(osService).atualizarStatus(1L, StatusOS.EM_EXECUCAO, any())
+    verify(osService).atualizarStatus(
+      1L,
+      StatusOS.EM_EXECUCAO,
+      "Execução iniciada pelo Execution Service"
+    )
   }
 }

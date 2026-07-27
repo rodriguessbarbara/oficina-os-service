@@ -36,7 +36,7 @@ class OrdemServicoControllerTest {
   @Test
   fun `POST ordens deve retornar 201 com OS criada`() {
     val request = CriarOrdemRequest(clienteId = 10L, veiculoId = 20L)
-    `when`(service.criar(any(CriarOrdemRequest::class.java))).thenReturn(baseResponse)
+    `when`(service.criar(request)).thenReturn(baseResponse)
     
     mockMvc.perform(
       post("/ordens")
@@ -82,7 +82,7 @@ class OrdemServicoControllerTest {
   fun `PATCH ordens_id_status deve retornar 200 com status atualizado`() {
     val request = AtualizarStatusRequest(novoStatus = StatusOS.AGUARDANDO_APROVACAO)
     val updated = baseResponse.copy(status = StatusOS.AGUARDANDO_APROVACAO)
-    `when`(service.atualizarStatus(eq(1L), any(AtualizarStatusRequest::class.java))).thenReturn(updated)
+    `when`(service.atualizarStatus(1L, request)).thenReturn(updated)
     
     mockMvc.perform(
       patch("/ordens/1/status")
