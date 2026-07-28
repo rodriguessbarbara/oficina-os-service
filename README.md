@@ -148,6 +148,7 @@ Requer PostgreSQL, MongoDB e RabbitMQ rodando localmente nas portas padrão.
 | `RABBIT_USER` | `guest` | Usuário |
 | `RABBIT_PASS` | `guest` | Senha |
 | `RABBIT_VHOST` | `/` | Virtual host |
+| `RABBIT_SSL_ENABLED` | `false` | Habilita TLS (`true` no CloudAMQP) |
 | `BILLING_SERVICE_URL` | `http://localhost:8081` | URL do Billing Service |
 | `EXECUTION_SERVICE_URL` | `http://localhost:8082` | URL do Execution Service |
 

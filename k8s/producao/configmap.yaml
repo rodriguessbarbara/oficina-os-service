@@ -19,11 +19,9 @@ data:
   MONGO_USER: "admin"
   MONGO_DB: "os_history"
 
-  # RabbitMQ (CloudAMQP ou Amazon MQ)
-  RABBIT_HOST: "rabbitmq.oficina-mvp-prod.svc.cluster.local"
-  RABBIT_PORT: "5672"
-  RABBIT_USER: "guest"
-  RABBIT_VHOST: "/"
+  # RabbitMQ CloudAMQP (host, usuário, senha e vhost vêm do Secret)
+  RABBIT_PORT: "5671"
+  RABBIT_SSL_ENABLED: "true"
 
   # URLs dos outros microsserviços
   BILLING_SERVICE_URL: "http://billing-service.oficina-mvp-prod.svc.cluster.local"

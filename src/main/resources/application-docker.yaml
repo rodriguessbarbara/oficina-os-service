@@ -20,6 +20,8 @@ spring:
     username: ${RABBIT_USER:guest}
     password: ${RABBIT_PASS:guest}
     virtual-host: ${RABBIT_VHOST:/}
+    ssl:
+      enabled: ${RABBIT_SSL_ENABLED:false}
 
 services:
   billing:

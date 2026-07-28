@@ -63,11 +63,26 @@ spec:
                   key: MONGO_PASS
 
             # ──── RabbitMQ ────
+            - name: RABBIT_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: os-service-secrets
+                  key: RABBIT_HOST
+            - name: RABBIT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: os-service-secrets
+                  key: RABBIT_USER
             - name: RABBIT_PASS
               valueFrom:
                 secretKeyRef:
                   name: os-service-secrets
                   key: RABBIT_PASS
+            - name: RABBIT_VHOST
+              valueFrom:
+                secretKeyRef:
+                  name: os-service-secrets
+                  key: RABBIT_VHOST
 
           envFrom:
             - configMapRef:
