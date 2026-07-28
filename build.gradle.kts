@@ -106,10 +106,6 @@ sonar {
 		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
 		property("sonar.qualitygate.wait", "true")
 		property(
-			"sonar.exclusions",
-			"**/OficinaOsServiceApplication.kt"
-		)
-		property(
 			"sonar.coverage.exclusions",
 			"**/OficinaOsServiceApplication.kt," +
 					"**/infra/repository/**," +
