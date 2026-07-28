@@ -12,7 +12,8 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://${MONGO_USER:admin}:${MONGO_PASS:12345mongo}@${MONGO_HOST:mongodb-os}:27017/${MONGO_DB:os_history}?authSource=admin
+      uri: ${MONGO_URI:mongodb://admin:12345mongo@mongodb-os:27017/os_history?authSource=admin}
+      database: ${MONGO_DATABASE:os_history}
 
   rabbitmq:
     host: ${RABBIT_HOST:rabbitmq}

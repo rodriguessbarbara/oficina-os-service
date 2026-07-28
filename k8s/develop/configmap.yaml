@@ -14,10 +14,8 @@ data:
   DB_NAME: "oficina_os_db"
   DB_USER: "postgres"
 
-  # MongoDB (Atlas ou DocumentDB)
-  MONGO_HOST: "mongo-cluster.mongodb.net"
-  MONGO_USER: "admin"
-  MONGO_DB: "os_history"
+  # MongoDB Atlas
+  MONGO_DATABASE: "os_history"
 
   # RabbitMQ CloudAMQP (host, usuário, senha e vhost vêm do Secret)
   RABBIT_PORT: "5671"

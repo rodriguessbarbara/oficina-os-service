@@ -136,12 +136,14 @@ jobs:
             --name app-cluster-producao
 
       - name: Criar/atualizar Secret K8s
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
         run: |
           kubectl delete secret os-service-secrets -n oficina-mvp-prod --ignore-not-found=true
           kubectl create secret generic os-service-secrets \
             --namespace=oficina-mvp-prod \
             --from-literal=DB_PASSWORD="${{ secrets.OS_DB_PASSWORD }}" \
-            --from-literal=MONGO_PASS="${{ secrets.OS_MONGO_PASS }}" \
+            --from-literal=MONGO_URI="$MONGO_URI" \
             --from-literal=RABBIT_HOST="${{ secrets.RABBIT_HOST }}" \
             --from-literal=RABBIT_USER="${{ secrets.RABBIT_USER }}" \
             --from-literal=RABBIT_PASS="${{ secrets.RABBIT_PASS }}" \

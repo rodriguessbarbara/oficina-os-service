@@ -17,7 +17,8 @@ spring:
   # Conexão com o MongoDB
   data:
     mongodb:
-      uri: mongodb://admin:12345mongo@localhost:27017/os_history?authSource=admin
+      uri: ${MONGO_URI:mongodb://admin:12345mongo@localhost:27017/os_history?authSource=admin}
+      database: ${MONGO_DATABASE:os_history}
 
   # RabbitMQ (local)
   rabbitmq:
