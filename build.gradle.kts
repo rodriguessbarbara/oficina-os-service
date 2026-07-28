@@ -95,15 +95,18 @@ tasks.check {
 }
 
 // ---------- SonarQube ----------
-sonarqube {
+sonar {
 	properties {
-		property("sonar.projectKey", "oficina-os-service")
+		property("sonar.projectKey", "rodriguessbarbara_oficina-os-service")
+		property("sonar.organization", "rodriguessbarbara")
 		property("sonar.projectName", "oficina-os-service")
+		property("sonar.host.url", "https://sonarcloud.io")
 		property("sonar.sources", "src/main/kotlin")
 		property("sonar.tests", "src/test/kotlin")
-		property("sonar.kotlin.coverage.reportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+		property("sonar.qualitygate.wait", "true")
 		property(
-			"sonar.exclusions",
+			"sonar.coverage.exclusions",
 			"**/OficinaOsServiceApplication.kt," +
 					"**/infra/repository/**," +
 					"**/infra/nosql/**," +
@@ -112,4 +115,8 @@ sonarqube {
 					"**/infra/dto/**"
 		)
 	}
+}
+
+tasks.named("sonar") {
+	dependsOn(tasks.jacocoTestReport)
 }

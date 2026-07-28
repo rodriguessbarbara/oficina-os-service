@@ -8,8 +8,12 @@ import java.math.BigDecimal
 import java.time.Instant
 
 data class CriarOrdemRequest(
-  @NotNull val clienteId: Long,
-  @NotNull val veiculoId: Long,
+  @field:NotNull(message = "O ID do cliente é obrigatório")
+  @field:Positive(message = "O ID do cliente deve ser maior que zero")
+  val clienteId: Long,
+  @field:NotNull(message = "O ID do veículo é obrigatório")
+  @field:Positive(message = "O ID do veículo deve ser maior que zero")
+  val veiculoId: Long,
   @Valid val itensServico: List<ItemServicoRequest> = emptyList(),
   @Valid val itensEstoque: List<ItemEstoqueRequest> = emptyList()
 )

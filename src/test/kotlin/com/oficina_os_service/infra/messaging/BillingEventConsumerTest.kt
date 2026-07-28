@@ -37,7 +37,11 @@ class BillingEventConsumerTest {
     verify(resumoRepository).save(captor.capture())
     assertThat(captor.value.orcamentoId).isEqualTo("orca-123")
     assertThat(captor.value.statusOrcamento).isEqualTo("PENDENTE")
-    verify(osService).atualizarStatus(1L, StatusOS.AGUARDANDO_APROVACAO, any())
+    verify(osService).atualizarStatus(
+      1L,
+      StatusOS.AGUARDANDO_APROVACAO,
+      "Orçamento gerado pelo Billing Service"
+    )
   }
   
   @Test
@@ -59,7 +63,7 @@ class BillingEventConsumerTest {
     
     consumer.onPagamentoConfirmado(event)
     
-    verify(osService).atualizarStatus(1L, StatusOS.APROVADA, any())
+    verify(osService).atualizarStatus(1L, StatusOS.APROVADA, "Pagamento confirmado")
   }
   
   @Test
@@ -81,6 +85,6 @@ class BillingEventConsumerTest {
     
     consumer.onOrcamentoAprovado(event)
     
-    verify(osService).atualizarStatus(1L, StatusOS.APROVADA, any())
+    verify(osService).atualizarStatus(1L, StatusOS.APROVADA, "Orçamento aprovado pelo cliente")
   }
 }

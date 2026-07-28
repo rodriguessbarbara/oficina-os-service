@@ -3,6 +3,7 @@ package com.oficina_os_service.application
 import com.oficina_os_service.domain.enum.StatusOS
 import com.oficina_os_service.infra.dto.AtualizarStatusRequest
 import com.oficina_os_service.infra.dto.CriarOrdemRequest
+import com.oficina_os_service.infra.dto.ItemEstoqueRequest
 import com.oficina_os_service.infra.dto.ItemServicoRequest
 import com.oficina_os_service.infra.messaging.OsEventPublisher
 import com.oficina_os_service.infra.nosql.*
@@ -13,6 +14,8 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.*
@@ -67,7 +70,7 @@ class OrdemServicoServiceTest {
     
     assertThat(response.status).isEqualTo(StatusOS.RECEBIDA)
     assertThat(response.clienteId).isEqualTo(10L)
-    verify(publisher).publicarOsCriada(any(OrdemServicoEntity::class.java))
+    verify(publisher).publicarOsCriada(osEntity)
     verify(historicoRepository).save(any(HistoricoStatusDocument::class.java))
   }
   
@@ -83,6 +86,31 @@ class OrdemServicoServiceTest {
     assertThatThrownBy { service.criar(request) }
       .isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("99")
+  }
+
+  @Test
+  fun `criar deve associar itens de estoque a OS`() {
+    val request = CriarOrdemRequest(
+      clienteId = 10L,
+      veiculoId = 20L,
+      itensEstoque = listOf(
+        ItemEstoqueRequest(
+          estoqueId = 8L,
+          quantidade = BigDecimal("3.00"),
+          precoUnitario = BigDecimal("25.50")
+        )
+      )
+    )
+    `when`(osRepository.save(any(OrdemServicoEntity::class.java))).thenReturn(osEntity)
+
+    service.criar(request)
+
+    assertThat(osEntity.itensEstoque).hasSize(1)
+    val itemEstoque = osEntity.itensEstoque.single()
+    assertThat(itemEstoque.estoqueId).isEqualTo(8L)
+    assertThat(itemEstoque.quantidade).isEqualByComparingTo("3.00")
+    assertThat(itemEstoque.precoUnitario).isEqualByComparingTo("25.50")
+    assertThat(itemEstoque.ordemServico).isSameAs(osEntity)
   }
   
   @Test
@@ -129,6 +157,34 @@ class OrdemServicoServiceTest {
     assertThat(response.status).isEqualTo(StatusOS.AGUARDANDO_APROVACAO)
     verify(historicoRepository).save(any(HistoricoStatusDocument::class.java))
   }
+
+  @Test
+  fun `atualizarStatus deve lancar EntityNotFoundException quando OS nao existe`() {
+    `when`(osRepository.findById(999L)).thenReturn(Optional.empty())
+
+    assertThatThrownBy {
+      service.atualizarStatus(999L, StatusOS.EM_EXECUCAO, "Execução iniciada")
+    }
+      .isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("999")
+  }
+
+  @ParameterizedTest
+  @EnumSource(
+    value = StatusOS::class,
+    names = ["FINALIZADA", "CANCELADA"]
+  )
+  fun `atualizarStatus deve encerrar OS em status terminal`(statusTerminal: StatusOS) {
+    `when`(osRepository.findById(1L)).thenReturn(Optional.of(osEntity))
+    `when`(osRepository.save(any(OrdemServicoEntity::class.java))).thenAnswer { it.arguments[0] }
+    `when`(historicoRepository.findAllByOsIdOrderByDataAlteracaoDesc(1L)).thenReturn(emptyList())
+    `when`(resumoRepository.findById(1L)).thenReturn(Optional.empty())
+
+    val response = service.atualizarStatus(1L, statusTerminal, "Transição terminal")
+
+    assertThat(response.status).isEqualTo(statusTerminal)
+    assertThat(response.dataEncerramento).isNotNull()
+  }
   
   @Test
   fun `cancelar deve mudar status para CANCELADA e publicar os_cancelada`() {
@@ -167,5 +223,32 @@ class OrdemServicoServiceTest {
     val result = service.listarPorCliente(10L)
     
     assertThat(result).isEmpty()
+  }
+
+  @Test
+  fun `listarPorCliente deve enriquecer cada OS com historico e resumo`() {
+    val historico = HistoricoStatusDocument(
+      osId = 1L,
+      statusAnterior = StatusOS.RECEBIDA,
+      statusNovo = StatusOS.AGUARDANDO_APROVACAO
+    )
+    val resumo = OsResumoDocument(
+      osId = 1L,
+      orcamentoId = "orca-123",
+      statusOrcamento = "PENDENTE"
+    )
+    `when`(osRepository.findAllByClienteId(10L)).thenReturn(listOf(osEntity))
+    `when`(historicoRepository.findAllByOsIdOrderByDataAlteracaoDesc(1L))
+      .thenReturn(listOf(historico))
+    `when`(resumoRepository.findById(1L)).thenReturn(Optional.of(resumo))
+
+    val result = service.listarPorCliente(10L)
+
+    assertThat(result).hasSize(1)
+    val ordem = result.single()
+    assertThat(ordem.id).isEqualTo(1L)
+    assertThat(ordem.historico).hasSize(1)
+    assertThat(ordem.orcamento?.orcamentoId).isEqualTo("orca-123")
+    assertThat(ordem.orcamento?.status).isEqualTo("PENDENTE")
   }
 }

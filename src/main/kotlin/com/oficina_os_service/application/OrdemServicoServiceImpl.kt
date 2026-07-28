@@ -41,7 +41,7 @@ class OrdemServicoServiceImpl(
         status = StatusItemServico.PENDENTE,
         ordemServico = savedOs
       )
-    }
+    }.toMutableList()
     
     val itensEstoque = request.itensEstoque.map { item ->
       ItemEstoqueEntity(
@@ -50,16 +50,17 @@ class OrdemServicoServiceImpl(
         precoUnitario = item.precoUnitario,
         ordemServico = savedOs
       )
-    }
+    }.toMutableList()
     
     savedOs.itensServico = itensServico
     savedOs.itensEstoque = itensEstoque
     val finalOs = osRepository.save(savedOs)
+    val osId = finalOs.id!!
     
-    resumoRepository.save(OsResumoDocument(osId = finalOs.id!!))
+    resumoRepository.save(OsResumoDocument(osId = osId))
     historicoRepository.save(
       HistoricoStatusDocument(
-        osId = finalOs.id!!,
+        osId = osId,
         statusAnterior = null,
         statusNovo = StatusOS.RECEBIDA
       )
@@ -110,8 +111,9 @@ class OrdemServicoServiceImpl(
   @Transactional(readOnly = true)
   override fun listarPorCliente(clienteId: Long): List<OrdemServicoResponse> =
     osRepository.findAllByClienteId(clienteId).map { entity ->
-      val historico = historicoRepository.findAllByOsIdOrderByDataAlteracaoDesc(entity.id!!)
-      val resumo = resumoRepository.findById(entity.id!!).orElse(null)
+      val osId = entity.id!!
+      val historico = historicoRepository.findAllByOsIdOrderByDataAlteracaoDesc(osId)
+      val resumo = resumoRepository.findById(osId).orElse(null)
       entity.toResponse(historico, resumo)
     }
   

@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: os-service
+  namespace: NAMESPACE_PLACEHOLDER
+  labels:
+    app: os-service
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: os-service
+
+  template:
+    metadata:
+      labels:
+        app: os-service
+
+    spec:
+      containers:
+        - name: app
+          image: IMAGE_PLACEHOLDER
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 8080
+
+          env:
+            # ──── Datadog APM ────
+            - name: DD_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: os-service-config
+                  key: DD_ENV
+            - name: DD_SERVICE
+              value: "os-service"
+            - name: DD_VERSION
+              value: "1.0.0"
+            - name: DD_LOGS_INJECTION
+              value: "true"
+            - name: DD_TRACE_ENABLED
+              value: "true"
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+
+            # ──── PostgreSQL ────
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: os-service-secrets
+                  key: DB_PASSWORD
+
+            # ──── MongoDB ────
+            - name: MONGO_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: os-service-secrets
+                  key: MONGO_PASS
+
+            # ──── RabbitMQ ────
+            - name: RABBIT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: os-service-secrets
+                  key: RABBIT_PASS
+
+          envFrom:
+            - configMapRef:
+                name: os-service-config
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 3
+
+          resources:
+            requests:
+              memory: "384Mi"
+              cpu: "150m"
+            limits:
+              memory: "768Mi"
+              cpu: "500m"
