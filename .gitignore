@@ -39,3 +39,9 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Environment files / local secrets ###
+.env
+.env.*
+!.env.example
+.github/.env.example
