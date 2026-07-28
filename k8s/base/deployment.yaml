@@ -56,18 +56,33 @@ spec:
                   key: DB_PASSWORD
 
             # ──── MongoDB ────
-            - name: MONGO_PASS
+            - name: MONGO_URI
               valueFrom:
                 secretKeyRef:
                   name: os-service-secrets
-                  key: MONGO_PASS
+                  key: MONGO_URI
 
             # ──── RabbitMQ ────
+            - name: RABBIT_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: os-service-secrets
+                  key: RABBIT_HOST
+            - name: RABBIT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: os-service-secrets
+                  key: RABBIT_USER
             - name: RABBIT_PASS
               valueFrom:
                 secretKeyRef:
                   name: os-service-secrets
                   key: RABBIT_PASS
+            - name: RABBIT_VHOST
+              valueFrom:
+                secretKeyRef:
+                  name: os-service-secrets
+                  key: RABBIT_VHOST
 
           envFrom:
             - configMapRef:

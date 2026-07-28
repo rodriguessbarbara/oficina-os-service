@@ -17,7 +17,8 @@ spring:
   # Conexão com o MongoDB
   data:
     mongodb:
-      uri: mongodb://admin:12345mongo@localhost:27017/os_history?authSource=admin
+      uri: ${MONGO_URI:mongodb://admin:12345mongo@localhost:27017/os_history?authSource=admin}
+      database: ${MONGO_DATABASE:os_history}
 
   # RabbitMQ (local)
   rabbitmq:
@@ -27,7 +28,7 @@ spring:
     password: ${RABBIT_PASS:guest}
     virtual-host: ${RABBIT_VHOST:/}
     ssl:
-      enabled: true
+      enabled: ${RABBIT_SSL_ENABLED:false}
     listener:
       simple:
         retry:

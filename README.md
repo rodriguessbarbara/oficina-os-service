@@ -139,15 +139,14 @@ Requer PostgreSQL, MongoDB e RabbitMQ rodando localmente nas portas padrão.
 | `DB_NAME` | `oficina_os_db` | Nome do banco |
 | `DB_USER` | `postgres` | Usuário |
 | `DB_PASSWORD` | `12345os` | Senha |
-| `MONGO_HOST` | `localhost` | Host do MongoDB |
-| `MONGO_USER` | `admin` | Usuário MongoDB |
-| `MONGO_PASS` | `12345mongo` | Senha MongoDB |
-| `MONGO_DB` | `os_history` | Database MongoDB |
+| `MONGO_URI` | `mongodb://admin:...@localhost:27017/os_history` | URI completa do MongoDB local ou Atlas (`mongodb+srv://...`) |
+| `MONGO_DATABASE` | `os_history` | Banco usado quando a URI não informa o nome |
 | `RABBIT_HOST` | `localhost` | Host do RabbitMQ |
 | `RABBIT_PORT` | `5672` | Porta (5671 para TLS/CloudAMQP) |
 | `RABBIT_USER` | `guest` | Usuário |
 | `RABBIT_PASS` | `guest` | Senha |
 | `RABBIT_VHOST` | `/` | Virtual host |
+| `RABBIT_SSL_ENABLED` | `false` | Habilita TLS (`true` no CloudAMQP) |
 | `BILLING_SERVICE_URL` | `http://localhost:8081` | URL do Billing Service |
 | `EXECUTION_SERVICE_URL` | `http://localhost:8082` | URL do Execution Service |
 

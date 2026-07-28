@@ -22,8 +22,11 @@ IMAGE=<account>.dkr.ecr.us-east-1.amazonaws.com/oficina-os-service:<sha>
 kubectl create secret generic os-service-secrets \
   --namespace=$NAMESPACE \
   --from-literal=DB_PASSWORD=<senha-postgres> \
-  --from-literal=MONGO_PASS=<senha-mongo> \
-  --from-literal=RABBIT_PASS=<senha-rabbit>
+  --from-literal=MONGO_URI=<uri-completa-mongodb-atlas> \
+  --from-literal=RABBIT_HOST=<host-cloudamqp> \
+  --from-literal=RABBIT_USER=<usuario-cloudamqp> \
+  --from-literal=RABBIT_PASS=<senha-cloudamqp> \
+  --from-literal=RABBIT_VHOST=<vhost-cloudamqp>
 
 kubectl apply -f k8s/producao/configmap.yaml
 
@@ -54,5 +57,8 @@ kubectl rollout status deployment/os-service -n $NAMESPACE
 | `SONAR_PROJECT_KEY` | Chave do projeto no SonarCloud |
 | `SONAR_ORGANIZATION` | Organização no SonarCloud |
 | `OS_DB_PASSWORD` | Senha do PostgreSQL exclusivo do OS Service |
-| `OS_MONGO_PASS` | Senha do MongoDB |
-| `OS_RABBIT_PASS` | Senha do RabbitMQ |
+| `MONGO_URI` | URI completa e secreta do MongoDB Atlas |
+| `RABBIT_HOST` | Host do CloudAMQP, sem protocolo |
+| `RABBIT_USER` | Usuário do CloudAMQP |
+| `RABBIT_PASS` | Senha do CloudAMQP |
+| `RABBIT_VHOST` | Virtual host do CloudAMQP |
