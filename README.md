@@ -1,6 +1,17 @@
 # oficina-os-service
 
+[![CI/CD](https://github.com/rodriguessbarbara/oficina-os-service/actions/workflows/ci-cd.yaml/badge.svg?branch=develop)](https://github.com/rodriguessbarbara/oficina-os-service/actions/workflows/ci-cd.yaml)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=rodriguessbarbara_oficina-os-service&metric=alert_status)](https://sonarcloud.io/summary/overall?id=rodriguessbarbara_oficina-os-service)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=rodriguessbarbara_oficina-os-service&metric=coverage)](https://sonarcloud.io/summary/overall?id=rodriguessbarbara_oficina-os-service)
+
 Microsserviço responsável pelo ciclo de vida das **Ordens de Serviço (OS)** em uma oficina mecânica. Faz parte de uma arquitetura de microsserviços e se comunica com os serviços de Billing e Execution via eventos assíncronos (RabbitMQ).
+
+## Arquitetura
+
+[![Visão geral da arquitetura de microsserviços](docs/evidencias/diagrama-arquitetura.png)](docs/arquitetura.md)
+
+- [Documentação e todos os diagramas](docs/arquitetura.md)
+- [Diagrama completo em HTML](docs/diagrama-arquitetura.html)
 
 ## Tecnologias
 
@@ -174,6 +185,16 @@ As migrações são gerenciadas pelo **Flyway** e rodam automaticamente ao inici
 # Relatório HTML de cobertura
 open build/reports/jacoco/test/html/index.html
 ```
+
+### Evidências
+
+- [Resultado detalhado dos testes e da cobertura JaCoCo](docs/cobertura-testes.md)
+- [Relatório público no SonarCloud](https://sonarcloud.io/summary/overall?id=rodriguessbarbara_oficina-os-service)
+- [Execuções e artefatos do GitHub Actions](https://github.com/rodriguessbarbara/oficina-os-service/actions/workflows/ci-cd.yaml)
+
+Na verificação de 28/07/2026, os **40 testes passaram sem falhas**. O JaCoCo
+registrou **80,32% de cobertura por instruções**, e o SonarCloud publicou
+**94,7% de cobertura** com o Quality Gate aprovado.
 
 ## Health checks (Kubernetes)
 
