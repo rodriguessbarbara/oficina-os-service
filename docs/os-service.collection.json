@@ -1,0 +1,187 @@
+{
+  "info": {
+    "_postman_id": "os-service-collection-v1",
+    "name": "OS Service — Oficina Mecânica",
+    "description": "Endpoints do microsserviço de Ordens de Serviço. Base URL configurável via variável de ambiente {{baseUrl}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "osId",    "value": "1",                     "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Ordens de Serviço",
+      "item": [
+        {
+          "name": "Criar OS",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/ordens", "host": ["{{baseUrl}}"], "path": ["ordens"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 1,\n  \"veiculoId\": 42,\n  \"itensServico\": [\n    { \"servicoId\": 1, \"quantidade\": 1 }\n  ],\n  \"itensEstoque\": []\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar OS por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/ordens/{{osId}}",
+              "host": ["{{baseUrl}}"], "path": ["ordens", "{{osId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar OS por clienteId",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/ordens?clienteId=1",
+              "host": ["{{baseUrl}}"], "path": ["ordens"],
+              "query": [{ "key": "clienteId", "value": "1" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar status da OS",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/ordens/{{osId}}/status",
+              "host": ["{{baseUrl}}"], "path": ["ordens", "{{osId}}", "status"]
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"novoStatus\": \"EM_DIAGNOSTICO\",\n  \"motivo\": \"Diagnóstico iniciado pelo mecânico\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancelar OS (rollback Saga)",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/ordens/{{osId}}?motivo=Cancelado%20pelo%20cliente",
+              "host": ["{{baseUrl}}"], "path": ["ordens", "{{osId}}"],
+              "query": [{ "key": "motivo", "value": "Cancelado pelo cliente" }]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Fluxo completo da Saga (exemplos)",
+      "item": [
+        {
+          "name": "1 — Criar OS",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/ordens", "host": ["{{baseUrl}}"], "path": ["ordens"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 1,\n  \"veiculoId\": 1,\n  \"itensServico\": [{ \"servicoId\": 1, \"quantidade\": 1 }],\n  \"itensEstoque\": []\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2 — Simular orcamento.gerado (status → AGUARDANDO_APROVACAO)",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/ordens/{{osId}}/status",
+              "host": ["{{baseUrl}}"], "path": ["ordens", "{{osId}}", "status"]
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"novoStatus\": \"AGUARDANDO_APROVACAO\"\n}" }
+          },
+          "response": []
+        },
+        {
+          "name": "3 — Simular pagamento.confirmado (status → APROVADA)",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/ordens/{{osId}}/status",
+              "host": ["{{baseUrl}}"], "path": ["ordens", "{{osId}}", "status"]
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"novoStatus\": \"APROVADA\"\n}" }
+          },
+          "response": []
+        },
+        {
+          "name": "4 — Simular execucao.iniciada (status → EM_EXECUCAO)",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/ordens/{{osId}}/status",
+              "host": ["{{baseUrl}}"], "path": ["ordens", "{{osId}}", "status"]
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"novoStatus\": \"EM_EXECUCAO\"\n}" }
+          },
+          "response": []
+        },
+        {
+          "name": "5 — Simular execucao.finalizada (status → FINALIZADA)",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/ordens/{{osId}}/status",
+              "host": ["{{baseUrl}}"], "path": ["ordens", "{{osId}}", "status"]
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"novoStatus\": \"FINALIZADA\"\n}" }
+          },
+          "response": []
+        },
+        {
+          "name": "6 — Rollback: cancelar OS (orcamento.rejeitado)",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/ordens/{{osId}}/status",
+              "host": ["{{baseUrl}}"], "path": ["ordens", "{{osId}}", "status"]
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"novoStatus\": \"CANCELADA\",\n  \"motivo\": \"Orçamento rejeitado pelo cliente\"\n}" }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health / Actuator",
+      "item": [
+        {
+          "name": "Liveness probe",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/actuator/health/liveness", "host": ["{{baseUrl}}"], "path": ["actuator", "health", "liveness"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Readiness probe",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/actuator/health/readiness", "host": ["{{baseUrl}}"], "path": ["actuator", "health", "readiness"] }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

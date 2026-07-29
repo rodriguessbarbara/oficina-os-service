@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arquitetura — Oficina Mecânica Microsserviços (Fase 4)</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      padding: 32px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: #f8fafc;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 36px;
+    }
+    h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin: 40px 0 16px;
+      padding-left: 12px;
+      border-left: 3px solid #6366f1;
+    }
+    .diagram-box {
+      background: #1e2330;
+      border: 1px solid #2d3748;
+      border-radius: 12px;
+      padding: 28px 20px;
+      margin-bottom: 8px;
+      overflow-x: auto;
+    }
+    .diagram-box .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 12px 0 0 0;
+      padding: 0 4px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-mono   { background: #3b82f6; }
+    .dot-os     { background: #a855f7; }
+    .dot-bill   { background: #f59e0b; }
+    .dot-exec   { background: #10b981; }
+    .dot-infra  { background: #64748b; }
+    .dot-rabbit { background: #ef4444; }
+    .note {
+      font-size: 11px;
+      color: #64748b;
+      text-align: center;
+      margin-top: 6px;
+    }
+    footer {
+      text-align: center;
+      font-size: 11px;
+      color: #475569;
+      margin-top: 48px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Arquitetura de Microsserviços — Oficina Mecânica</h1>
+<p class="subtitle">Fase 4 · POS TECH · Saga Coreografada via RabbitMQ · Deploy em AWS EKS</p>
+
+<!-- ══════════════════════════════════════════════════
+     DIAGRAMA 1 — Visão geral dos componentes
+════════════════════════════════════════════════════ -->
+<h2>1 · Visão Geral dos Componentes e Infraestrutura</h2>
+<div class="diagram-box">
+  <div class="mermaid">
+flowchart TD
+    CLIENT(["👤 Cliente\n(Browser / App)"])
+
+    subgraph AWS ["☁️ AWS Cloud"]
+      APIGW["🌐 API Gateway / ALB\nEntrypoint público"]
+      LAMBDA["λ Lambda Auth\nNode.js 20\nPOST /auth/cpf → JWT"]
+
+      subgraph EKS ["☸️ EKS Cluster — Kubernetes"]
+        direction TB
+
+        subgraph MONO_POD ["Pod: oficina-mvp-backend"]
+          MONO["🔵 Monolito\nSpring Boot 3.4 · Java 17\nCliente · Veículo · Estoque\nCatálogo de Serviços"]
+        end
+
+        subgraph OS_POD ["Pod: os-service"]
+          OS["🟣 OS Service\nSpring Boot 3.3 · Kotlin\nCiclo de Vida das OS\nSaga Coreografada"]
+        end
+
+        subgraph BILL_POD ["Pod: billing-service (futuro)"]
+          BILL["🟡 Billing Service\nOrçamentos · Pagamentos\nIntegração Mercado Pago"]
+        end
+
+        subgraph EXEC_POD ["Pod: execution-service (futuro)"]
+          EXEC["🟢 Execution Service\nFila de Execução\nDiagnóstico · Reparos"]
+        end
+
+        RABBIT["🔴 RabbitMQ\nExchange: os.exchange\nTopicExchange + DLQ"]
+        DD["📊 Datadog Agent\nAPM · Logs · Métricas"]
+      end
+
+      subgraph DBS ["Camada de Dados"]
+        RDS_MONO[("🐘 RDS PostgreSQL\nDB: oficina_mvp\n(Monolito)")]
+        RDS_OS[("🐘 RDS PostgreSQL\nDB: oficina_os_db\n(OS Service)")]
+        MONGO[("🍃 MongoDB\nDB: os_history\n(Histórico de status)")]
+        RDS_BILL[("🐘 RDS PostgreSQL\nDB: billing_db\n(Billing — futuro)")]
+        RDS_EXEC[("🐘 RDS PostgreSQL\nDB: exec_db\n(Execution — futuro)")]
+      end
+    end
+
+    CLIENT -->|"HTTPS"| APIGW
+    APIGW -->|"POST /auth/cpf"| LAMBDA
+    APIGW -->|"REST (JWT)"| MONO
+    APIGW -->|"REST (JWT)"| OS
+
+    MONO -->|"REST — PATCH /ordens/{id}/status\nPOST /ordens"| OS
+    MONO --- RDS_MONO
+
+    OS --- RDS_OS
+    OS --- MONGO
+    OS <-->|"Publica / Consome eventos"| RABBIT
+
+    RABBIT <-->|"Eventos Saga"| BILL
+    RABBIT <-->|"Eventos Saga"| EXEC
+
+    BILL --- RDS_BILL
+    EXEC --- RDS_EXEC
+
+    DD -.->|"APM traces"| MONO
+    DD -.->|"APM traces"| OS
+    DD -.->|"APM traces"| BILL
+    DD -.->|"APM traces"| EXEC
+
+    classDef mono   fill:#1d4ed8,stroke:#3b82f6,color:#fff
+    classDef os     fill:#7e22ce,stroke:#a855f7,color:#fff
+    classDef bill   fill:#b45309,stroke:#f59e0b,color:#fff
+    classDef exec   fill:#065f46,stroke:#10b981,color:#fff
+    classDef infra  fill:#1e293b,stroke:#475569,color:#94a3b8
+    classDef rabbit fill:#991b1b,stroke:#ef4444,color:#fff
+    classDef db     fill:#0f172a,stroke:#334155,color:#94a3b8
+    classDef client fill:#0c4a6e,stroke:#0ea5e9,color:#fff
+
+    class MONO mono
+    class OS os
+    class BILL bill
+    class EXEC exec
+    class APIGW,LAMBDA,DD infra
+    class RABBIT rabbit
+    class RDS_MONO,RDS_OS,MONGO,RDS_BILL,RDS_EXEC db
+    class CLIENT client
+  </div>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="dot dot-mono"></div>Monolito (Java)</div>
+  <div class="legend-item"><div class="dot dot-os"></div>OS Service (Kotlin)</div>
+  <div class="legend-item"><div class="dot dot-bill"></div>Billing Service (futuro)</div>
+  <div class="legend-item"><div class="dot dot-exec"></div>Execution Service (futuro)</div>
+  <div class="legend-item"><div class="dot dot-rabbit"></div>RabbitMQ — Broker da Saga</div>
+  <div class="legend-item"><div class="dot dot-infra"></div>Infra / Observabilidade</div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     DIAGRAMA 2 — Eventos da Saga Coreografada
+════════════════════════════════════════════════════ -->
+<h2>2 · Saga Coreografada — Fluxo de Eventos RabbitMQ</h2>
+<div class="diagram-box">
+  <div class="mermaid">
+flowchart LR
+    subgraph OS ["🟣 OS Service"]
+      OS_C["criar()"]
+      OS_S["atualizarStatus()"]
+      OS_X["cancelar()"]
+    end
+
+    subgraph MQ ["🔴 RabbitMQ\nos.exchange"]
+      direction TB
+      E1["os.criada"]
+      E2["os.cancelada"]
+      E3["orcamento.gerado"]
+      E4["orcamento.aprovado"]
+      E5["orcamento.rejeitado"]
+      E6["pagamento.confirmado"]
+      E7["pagamento.falhou"]
+      E8["execucao.iniciada"]
+      E9["execucao.finalizada"]
+    end
+
+    subgraph BILL ["🟡 Billing Service"]
+      B1["Gera orçamento"]
+      B2["Processa pagamento\n(Mercado Pago)"]
+    end
+
+    subgraph EXEC ["🟢 Execution Service"]
+      EX1["Inicia execução"]
+      EX2["Finaliza execução"]
+    end
+
+    OS_C -->|"publica"| E1
+    OS_X -->|"publica"| E2
+
+    E1 -->|"consome"| B1
+    B1 -->|"publica"| E3
+    B1 -->|"publica"| E4
+    B1 -->|"publica"| E5
+
+    E3 -->|"AGUARDANDO_APROVACAO"| OS_S
+    E4 -->|"APROVADA"| OS_S
+    E5 -->|"rollback → CANCELADA"| OS_X
+
+    E4 -->|"consome"| B2
+    B2 -->|"publica"| E6
+    B2 -->|"publica"| E7
+
+    E6 -->|"APROVADA"| OS_S
+    E7 -->|"rollback → CANCELADA"| OS_X
+
+    E6 -->|"consome"| EX1
+    EX1 -->|"publica"| E8
+    E8 -->|"EM_EXECUCAO"| OS_S
+
+    EX1 -->|"consome"| EX2
+    EX2 -->|"publica"| E9
+    E9 -->|"FINALIZADA"| OS_S
+
+    E2 -->|"compensação"| BILL
+    E2 -->|"compensação"| EXEC
+
+    classDef os     fill:#7e22ce,stroke:#a855f7,color:#fff
+    classDef bill   fill:#b45309,stroke:#f59e0b,color:#fff
+    classDef exec   fill:#065f46,stroke:#10b981,color:#fff
+    classDef event  fill:#1e293b,stroke:#ef4444,color:#fca5a5
+    class OS_C,OS_S,OS_X os
+    class B1,B2 bill
+    class EX1,EX2 exec
+    class E1,E2,E3,E4,E5,E6,E7,E8,E9 event
+  </div>
+</div>
+<p class="note">Cada fila tem Dead Letter Queue configurada — após 3 tentativas (2s → 4s → 8s) a mensagem vai para &lt;fila&gt;.dlq</p>
+
+
+<!-- ══════════════════════════════════════════════════
+     DIAGRAMA 3 — Sequência do fluxo happy path
+════════════════════════════════════════════════════ -->
+<h2>3 · Sequência — Fluxo Completo de uma OS (Happy Path)</h2>
+<div class="diagram-box">
+  <div class="mermaid">
+sequenceDiagram
+    actor C as Cliente
+    participant MONO as Monolito
+    participant OS as OS Service
+    participant MQ as RabbitMQ
+    participant BILL as Billing Service
+    participant MP as Mercado Pago
+    participant EXEC as Execution Service
+
+    C->>MONO: POST /os (clienteId, veiculoId)
+    MONO->>MONO: Salva OS local (RECEBIDA)
+    MONO->>OS: POST /ordens (clienteId, veiculoId)
+    OS->>OS: Persiste OS — PostgreSQL (RECEBIDA)
+    OS->>OS: Salva histórico — MongoDB
+    OS->>MQ: Publica os.criada
+
+    MQ->>BILL: os.criada
+    BILL->>BILL: Gera orçamento
+    BILL->>MQ: Publica orcamento.gerado
+
+    MQ->>OS: orcamento.gerado
+    OS->>OS: Status → AGUARDANDO_APROVACAO
+    OS->>OS: Salva histórico — MongoDB
+    MONO->>OS: PATCH /ordens/{id}/status (AGUARDANDO_APROVACAO)
+
+    C->>MONO: GET /os/{id}/aprovar (link do e-mail)
+    MONO->>MONO: Aprova orçamento, baixa estoque
+    MONO->>OS: PATCH /ordens/{id}/status (APROVADA)
+    BILL->>MQ: Publica orcamento.aprovado
+    MQ->>OS: orcamento.aprovado → APROVADA
+
+    BILL->>MP: Processa pagamento
+    MP-->>BILL: Pagamento confirmado
+    BILL->>MQ: Publica pagamento.confirmado
+    MQ->>OS: pagamento.confirmado → APROVADA
+
+    MQ->>EXEC: pagamento.confirmado
+    EXEC->>EXEC: Agenda execução
+    EXEC->>MQ: Publica execucao.iniciada
+    MQ->>OS: execucao.iniciada → EM_EXECUCAO
+
+    EXEC->>EXEC: Realiza diagnóstico e reparo
+    EXEC->>MQ: Publica execucao.finalizada
+    MQ->>OS: execucao.finalizada → FINALIZADA
+
+    C->>OS: GET /ordens/{id}
+    OS-->>C: OS FINALIZADA + histórico completo
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     DIAGRAMA 4 — Rollback (unhappy path)
+════════════════════════════════════════════════════ -->
+<h2>4 · Sequência — Rollback da Saga (Orçamento Rejeitado)</h2>
+<div class="diagram-box">
+  <div class="mermaid">
+sequenceDiagram
+    actor C as Cliente
+    participant OS as OS Service
+    participant MQ as RabbitMQ
+    participant BILL as Billing Service
+
+    Note over OS,BILL: OS está em AGUARDANDO_APROVACAO
+
+    C->>OS: DELETE /ordens/{id}?motivo=Preço alto
+    OS->>OS: Status → CANCELADA
+    OS->>OS: Salva histórico compensação — MongoDB
+    OS->>MQ: Publica os.cancelada
+
+    MQ->>BILL: os.cancelada
+    BILL->>BILL: Cancela orçamento pendente
+    Note over BILL: Transação compensatória concluída
+
+    alt Billing já iniciou pagamento
+      BILL->>BILL: Estorna pagamento no Mercado Pago
+      BILL->>MQ: Publica pagamento.falhou
+      MQ->>OS: pagamento.falhou → CANCELADA (idempotente)
+    end
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     DIAGRAMA 5 — Banco de dados por serviço
+════════════════════════════════════════════════════ -->
+<h2>5 · Isolamento de Dados — Um banco por microsserviço</h2>
+<div class="diagram-box">
+  <div class="mermaid">
+flowchart TD
+    subgraph RULE ["⚠️ Regra — Nenhum serviço acessa o banco de outro"]
+      direction LR
+
+      subgraph M ["🔵 Monolito"]
+        M_DB[("🐘 PostgreSQL\nofficina_mvp\n─────────────\ncliente\nveiculo\nestoque\nservico\nusuario")]
+      end
+
+      subgraph O ["🟣 OS Service"]
+        O_PG[("🐘 PostgreSQL\nofficina_os_db\n─────────────\ntb_ordem_servico\ntb_item_servico\ntb_item_estoque\ntb_servico")]
+        O_MG[("🍃 MongoDB\nos_history\n─────────────\nhistorico_status\nos_resumo")]
+      end
+
+      subgraph B ["🟡 Billing Service (futuro)"]
+        B_DB[("🐘 PostgreSQL\nbilling_db\n─────────────\norcamento\npagamento")]
+      end
+
+      subgraph E ["🟢 Execution Service (futuro)"]
+        E_DB[("🐘 PostgreSQL\nexec_db\n─────────────\nexecucao\nitem_execucao")]
+      end
+    end
+
+    M --- M_DB
+    O --- O_PG
+    O --- O_MG
+    B --- B_DB
+    E --- E_DB
+
+    M x--x O_PG
+    M x--x O_MG
+    O x--x M_DB
+    B x--x M_DB
+    E x--x O_PG
+
+    classDef svc fill:#1e293b,stroke:#475569,color:#e2e8f0
+    classDef db  fill:#0f172a,stroke:#334155,color:#94a3b8
+    class M,O,B,E svc
+    class M_DB,O_PG,O_MG,B_DB,E_DB db
+  </div>
+</div>
+<p class="note">✕ = acesso proibido entre serviços. Comunicação apenas via REST ou eventos RabbitMQ.</p>
+
+<footer>
+  Oficina Mecânica — Fase 4 POS TECH · Arquitetura de Microsserviços com Saga Coreografada ·
+  OS Service (Kotlin/Spring Boot) · Monolito (Java/Spring Boot) · Lambda Auth (Node.js)
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#7e22ce',
+      primaryTextColor: '#f8fafc',
+      primaryBorderColor: '#a855f7',
+      lineColor:    '#475569',
+      secondaryColor: '#1e293b',
+      tertiaryColor:  '#0f172a',
+      background:     '#0f1117',
+      mainBkg:        '#1e2330',
+      nodeBorder:     '#334155',
+      clusterBkg:     '#141923',
+      titleColor:     '#f8fafc',
+      edgeLabelBackground: '#1e2330',
+      fontSize: '14px'
+    },
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence:  { actorMargin: 60, messageMargin: 40, mirrorActors: false }
+  });
+</script>
+</body>
+</html>
